@@ -3,13 +3,19 @@ import "@nomicfoundation/hardhat-toolbox";
 
 const PRIVATE_KEY =vars.get("PRIVATE_KEY") ;
 const ETHERSCAN_API_KEY = vars.get("ETHERSCAN_API_KEY");
+const ALCHEMY_KEY = vars.get("ALCHEMY_KEY");
 
 
 const config: HardhatUserConfig = {
   solidity: "0.8.28",
 
   networks: {
-    hardhat: {},
+    hardhat: {
+       forking: {
+        url: `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`,
+        blockNumber: 23123591, 
+      },
+    },
     "lisk-sepolia" : {
       url : "https://rpc.sepolia-api.lisk.com",
       chainId : 4202,
