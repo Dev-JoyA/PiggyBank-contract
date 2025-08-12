@@ -136,29 +136,6 @@ async function main() {
     console.log("Usdc Bal after removal: ", ethers.formatUnits(usdcBalAfterLiquidity, 6))
     console.log("Dai Bal after removal: ", ethers.formatUnits(daiBalAfterLiquidity, 18))
 
-
-    console.log("----------------UNISWAP V2----------------");
-
-
-
-    console.log("----------------remove liquidity ETH-----------------");
-
-    const UniRouterContract2 = await ethers.getContractAt("IUniswap2", UNIRouter)
-    await UsdcContract.connect(impersonatedAccount).approve(UniRouterContract2, AmountA);
-    await DaiContract.connect(impersonatedAccount).approve(UniRouterContract2, AmountB);
-
-    await UniRouterContract2.connect(impersonatedAccount).removeLiquidityETHSupportingFeeOnTransferTokens(
-        UsdcAddress,
-        liquidityBalance,
-        0,
-        0,
-        impersonatedAccount.address,
-        deadline
-    )
-
-    const ans = await DaiContract.transfer
-
-
 }
 
 main().catch((error) => {
