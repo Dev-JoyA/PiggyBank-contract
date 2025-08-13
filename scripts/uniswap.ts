@@ -23,7 +23,7 @@ async function main() {
     console.log("Usdc bal : ", ethers.formatUnits(usdcBal, 6));
     console.log("Dai Bal: ", ethers.formatUnits(daiBal, 18) );
 
-     console.log("----------------Approving USDC and DAI for the router-----------------");
+    console.log("----------------Approving USDC and DAI for the router-----------------");
 
     let AmountA = ethers.parseUnits("200000", 6);
     let AmountB = ethers.parseUnits("200000", 18);
