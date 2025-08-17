@@ -114,62 +114,38 @@ async function main() {
         console.log("LP Tokens Received:", liquidityAdded);
 
     console.log("----------------Getting liquidity Value-----------------");
-console.log("----------------Removing Liquidity-----------------");
 
-// Get current reserves again to calculate expected amounts
-const [reserve2, reserve3] = await pairContract.getReserves();
-const currentWethReserve = isWethToken0 ? reserve0 : reserve1;
-const currentDaiReserve = isWethToken0 ? reserve1 : reserve0;
-const totalSupply = await lpToken.totalSupply();
+    console.log("----------------Removing Liquidity-----------------");
 
-// Calculate expected amounts
-const expectedEth = (liquidityAdded * currentWethReserve) / totalSupply;
-const expectedDai = (liquidityAdded * currentDaiReserve) / totalSupply;
+    // Get current reserves again to calculate expected amounts
+    const [reserve2, reserve3] = await pairContract.getReserves();
+    const currentWethReserve = isWethToken0 ? reserve0 : reserve1;
+    const currentDaiReserve = isWethToken0 ? reserve1 : reserve0;
+    const totalSupply = await lpToken.totalSupply();
 
-console.log("Expected ETH from removal:", ethers.formatUnits(expectedEth, 18));
-console.log("Expected DAI from removal:", ethers.formatUnits(expectedDai, 18));
+    // Calculate expected amounts
+    const expectedEth = (liquidityAdded * currentWethReserve) / totalSupply;
+    const expectedDai = (liquidityAdded * currentDaiReserve) / totalSupply;
 
-// Set minimum amounts with 5% slippage tolerance
-const ethMin = expectedEth * 95n / 100n;
-const daiMinn = expectedDai * 95n / 100n;
+    console.log("Expected ETH from removal:", ethers.formatUnits(expectedEth, 18));
+    console.log("Expected DAI from removal:", ethers.formatUnits(expectedDai, 18));
 
-console.log(`Removing ${ethers.formatUnits(liquidityAdded, 18)} LP tokens`);
-console.log(`Minimum ETH to accept: ${ethers.formatUnits(ethMin, 18)}`);
-console.log(`Minimum DAI to accept: ${ethers.formatUnits(daiMin, 18)}`);
+    // Set minimum amounts with 5% slippage tolerance
+    const ethMin = expectedEth * 95n / 100n;
+    const daiMinn = expectedDai * 95n / 100n;
 
-try {
-    const tx2 = await UniRouterContract2.connect(impersonatedAccount).removeLiquidityETHSupportingFeeOnTransferTokens(
-        DaiAddress,          // The non-ETH token (DAI)
-        liquidityAdded,      // Amount of LP tokens to burn
-        daiMinn,              // Minimum DAI to receive (with slippage)
-        ethMin,             // Minimum ETH to receive (with slippage)
-        impersonatedAccount.address,  // Recipient
-        deadline,            // Deadline
-        { gasLimit: 500000 } // Gas limit
-    );
+    console.log(`Removing ${ethers.formatUnits(liquidityAdded, 18)} LP tokens`);
+    console.log(`Minimum ETH to accept: ${ethers.formatUnits(ethMin, 18)}`);
+    console.log(`Minimum DAI to accept: ${ethers.formatUnits(daiMin, 18)}`);
 
-    const receipt = await tx2.wait();
-    console.log("Liquidity removed successfully! Tx hash:", );
+  
 
-    // Check final balances
-    const finalWethBal = await WethContract.balanceOf(impersonatedAccount.address);
-    const finalDaiBal = await DaiContract.balanceOf(impersonatedAccount.address);
-    const finalEthBal = await ethers.provider.getBalance(impersonatedAccount.address);
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+
     
-    console.log("Final balances:");
-    console.log("WETH:", ethers.formatUnits(finalWethBal, 18));
-    console.log("DAI:", ethers.formatUnits(finalDaiBal, 18));
-    console.log("ETH:", ethers.formatUnits(finalEthBal, 18));
-
-} catch (error) {
-    console.error("Failed to remove liquidity:", error);
-    if (error) {
-        console.log("Revert reason:", error);
-    }
-    if (error) {
-        console.log("Failed tx hash:", error);
-    }
-}
 
 
 
