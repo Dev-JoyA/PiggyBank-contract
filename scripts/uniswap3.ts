@@ -1,5 +1,4 @@
 import { ethers } from "hardhat";
-import { ISwapRouter__factory } from "../typechain-types";
 const helpers = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 
 const main = async () => {
@@ -16,14 +15,14 @@ const main = async () => {
 
   const DAI = await ethers.getContractAt("IERC20", DAIAddress);
   const WETH = await ethers.getContractAt("IERC20", wethAddress);
-  const ROUTER = await ethers.getContractAt("ISwapRouter", UNIRouter);
+  const ROUTER = await ethers.getContractAt("IUniswapV2", UNIRouter);
 
   console.log("Getting Pair Address for Uniswap Router...");
-  const factoryAddress = await ROUTER;
-  const factory = await ethers.getContractAt("ISwapRouter", factoryAddress);
+  const factoryAddress = await ROUTER.factory();
+  const factory = await ethers.getContractAt("IUniswapV2Factory", factoryAddress);
 
-//   const pairAddress = await factory.getPair(DAIAddress, wethAddress);
-//   const LPToken = await ethers.getContractAt("IERC20", pairAddress);
+  const pairAddress = await factory.getPair(DAIAddress, wethAddress);
+  const LPToken = await ethers.getContractAt("IERC20", pairAddress);
 
   console.log("Getting Token Balance...");
 
@@ -35,56 +34,39 @@ const main = async () => {
   console.log("ETH Balance Before:", ethers.formatUnits(ethBalanceBefore, 18));
 
   // Get liquidity balance (LP Token balance)
-//   const liquidityBF = await LPToken.balanceOf(impersonatedSigner.address);
-//   console.log("Liquidity Token Balance Before Removal:", liquidityBF);
+  const liquidityBF = await LPToken.balanceOf(impersonatedSigner.address);
+  console.log("Liquidity Token Balance Before Removal:", liquidityBF);
 
   console.log("Approving LP tokens to be burnt");
 
-//   await LPToken.connect(impersonatedSigner).approve(UNIRouter, liquidityBF);
+  await LPToken.connect(impersonatedSigner).approve(UNIRouter, liquidityBF);
 
   const deadline = Math.floor(Date.now() / 1000) + 60 * 10; 
 
-
-   const tx = await ROUTER.connect(impersonatedSigner).exactInputSingle(
-       {
-           tokenIn: DAIAddress,
-           tokenOut: wethAddress,
-           fee: 3000,
-           recipient: impersonatedSigner.address,
-           deadline: deadline,
-           amountIn: daiBalanceBefore,
-           amountOutMinimum: 0,
-           sqrtPriceLimitX96: 0
-       }
-   )
-
-     await tx.wait();
-     console.log("exact input single ")
-
   // Execute the removeLiquidityETHSupportingFeeOnTransferTokens function
-//   const tx = await ROUTER.connect(impersonatedSigner).removeLiquidityETHSupportingFeeOnTransferTokens(
-//     DAIAddress,
-//     liquidityBF,
-//     0, // Minimum amount of DAI token
-//     0, // Minimum amount of ETH
-//     impersonatedSigner.address,
-//     deadline
-//   );
+  const tx = await ROUTER.connect(impersonatedSigner).removeLiquidityETHSupportingFeeOnTransferTokens(
+    DAIAddress,
+    liquidityBF,
+    0, // Minimum amount of DAI token
+    0, // Minimum amount of ETH
+    impersonatedSigner.address,
+    deadline
+  );
 
-//   await tx.wait();
-//   console.log("removeLiquidityETHSupportingFeeOnTransferTokens executed at", tx.hash);
+  await tx.wait();
+  console.log("removeLiquidityETHSupportingFeeOnTransferTokens executed at", tx.hash);
 
-//   // Balance after removing liquidity
-//   const daiBalanceAfter = await DAI.balanceOf(impersonatedSigner.address);
-//   const ethBalanceAfter = await impersonatedSigner.provider.getBalance(impersonatedSigner.address);
+  // Balance after removing liquidity
+  const daiBalanceAfter = await DAI.balanceOf(impersonatedSigner.address);
+  const ethBalanceAfter = await impersonatedSigner.provider.getBalance(impersonatedSigner.address);
 
-//   console.log("DAI Balance After:", ethers.formatUnits(daiBalanceAfter, 18));
-//   console.log("ETH Balance After:", ethers.formatUnits(ethBalanceAfter, 18));
+  console.log("DAI Balance After:", ethers.formatUnits(daiBalanceAfter, 18));
+  console.log("ETH Balance After:", ethers.formatUnits(ethBalanceAfter, 18));
 
-//   // Get liquidity balance after removal
-//   const liquidityAF = await LPToken.balanceOf(impersonatedSigner.address);
-//   console.log("Liquidity Token Balance After Removal:", liquidityAF);
- };
+  // Get liquidity balance after removal
+  const liquidityAF = await LPToken.balanceOf(impersonatedSigner.address);
+  console.log("Liquidity Token Balance After Removal:", liquidityAF);
+};
 
 main().catch((error) => {
   console.error(error);
